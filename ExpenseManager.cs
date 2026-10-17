@@ -10,23 +10,23 @@ public class ExpenseManager : IExpenseManager
     public void WriteExpenseToList(Expense expense)
     {
         expenses.Add(expense);
-        ConsoleUI.Success("Expense Successfully Written to List!!");
+        PrintMessage("[ OK ]", "Expense Successfully Written to List!!", ConsoleColor.Green);
         return;
     }
 
     /// <summary>
     /// Prints out Expense List details !!
-    /// Search if List is Not Empty and Informs the User 
+    /// Search if List is Not Empty and Informs the User
     /// </summary>
     public void PrintExpenses()
     {
         if (expenses.Count != 0 && expenses != null)
         {
-            ConsoleUI.ShowExpenses(expenses);
+            PrintExpenseTable(expenses);
         }
         else
         {
-            ConsoleUI.Warning("Nothing in List Expenses!!");
+            PrintMessage("[WARN]", "Nothing in List Expenses!!", ConsoleColor.Yellow);
             return;
         }
     }
@@ -37,11 +37,11 @@ public class ExpenseManager : IExpenseManager
         expenses.MaxBy(exp => exp.Amount);
         if (maxExpense is null)
         {
-            ConsoleUI.Warning("Nothing in List Expenses!!");
+            PrintMessage("[WARN]", "Nothing in List Expenses!!", ConsoleColor.Yellow);
             return;
         }
-        ConsoleUI.Info("MAX Amount was in Expense :");
-        ConsoleUI.ShowExpenses(new List<Expense> { maxExpense });
+        PrintMessage("[INFO]", "MAX Amount was in Expense :", ConsoleColor.Cyan);
+        PrintExpenseTable(new List<Expense> { maxExpense });
     }
 
     public void FindMinAmountExpense()
@@ -50,14 +50,14 @@ public class ExpenseManager : IExpenseManager
         expenses.MinBy(exp => exp.Amount);
         if (minExpense is null)
         {
-            ConsoleUI.Warning("Nothing in List Expenses!!");
+            PrintMessage("[WARN]", "Nothing in List Expenses!!", ConsoleColor.Yellow);
             return;
         }
-        ConsoleUI.Info("MIN Amount was in Expense :");
-        ConsoleUI.ShowExpenses(new List<Expense> { minExpense });
+        PrintMessage("[INFO]", "MIN Amount was in Expense :", ConsoleColor.Cyan);
+        PrintExpenseTable(new List<Expense> { minExpense });
     }
     /// <summary>
-    /// Searches Users' Given Category Name --> Prints Expenses Details from that Category 
+    /// Searches Users' Given Category Name --> Prints Expenses Details from that Category
     /// If User gave Wrong Category Name --> Prints appropriate Not Found Message
     /// </summary>
     /// <param name="categoryName"> User Category Input </param>
@@ -68,18 +68,18 @@ public class ExpenseManager : IExpenseManager
 
         if (categorizedExpenses.Count == 0 || categorizedExpenses is null)
         {
-            ConsoleUI.Warning($"Given Category : {categoryName} Not found in Expense List!!");
+            PrintMessage("[WARN]", $"Given Category : {categoryName} Not found in Expense List!!", ConsoleColor.Yellow);
             return;
         }
         else
         {
-            ConsoleUI.ShowExpenses(categorizedExpenses);
+            PrintExpenseTable(categorizedExpenses);
             return;
         }
     }
 
     /// <summary>
-    /// Tries to find an Expense from the List by ID Given from the User !! 
+    /// Tries to find an Expense from the List by ID Given from the User !!
     /// </summary>
     /// <param name="id"> User Inputs ID </param>
     public void FindExpenseByID(int id)
@@ -88,10 +88,10 @@ public class ExpenseManager : IExpenseManager
         expenses.Where(exp => exp.Id == id).FirstOrDefault();
         if (expense is null)
         {
-            ConsoleUI.Warning($"Given ID : {id} Not found in Expense List!!");
+            PrintMessage("[WARN]", $"Given ID : {id} Not found in Expense List!!", ConsoleColor.Yellow);
             return;
         }
-        ConsoleUI.ShowExpenses(new List<Expense> { expense });
+        PrintExpenseTable(new List<Expense> { expense });
     }
 
     public void RemoveExpenseByID(int id)
@@ -101,13 +101,13 @@ public class ExpenseManager : IExpenseManager
 
         if (expenseID is null)
         {
-            ConsoleUI.Warning($"Given ID : {id} Not FOUND in Expense List!!");
+            PrintMessage("[WARN]", $"Given ID : {id} Not FOUND in Expense List!!", ConsoleColor.Yellow);
             return;
         }
         else
         {
             expenses.Remove(expenseID);
-            ConsoleUI.Success($"Expense : ID {expenseID.Id} ({expenseID.Name}) Succesfully REMOVED From List !!");
+            PrintMessage("[ OK ]", $"Expense : ID {expenseID.Id} ({expenseID.Name}) Succesfully REMOVED From List !!", ConsoleColor.Green);
             return;
         }
     }
@@ -120,7 +120,7 @@ public class ExpenseManager : IExpenseManager
         var options = new JsonSerializerOptions { WriteIndented = true };
         string jsonData = JsonSerializer.Serialize(expenses, options);
         await File.WriteAllTextAsync("ExpensesTracker.json", jsonData);
-        ConsoleUI.Success("Expense List Successfully Saved To ExpensesTracker.json !!");
+        PrintMessage("[ OK ]", "Expense List Successfully Saved To ExpensesTracker.json !!", ConsoleColor.Green);
     }
 
     public async Task LoadExpensesFromJsonAsync()
@@ -129,12 +129,53 @@ public class ExpenseManager : IExpenseManager
         List<Expense> loadedExpenses = JsonSerializer.Deserialize<List<Expense>>(loadedJsonData);
         if (loadedExpenses.Count != 0 && loadedExpenses is not null)
         {
-            ConsoleUI.ShowExpenses(loadedExpenses);
+            PrintExpenseTable(loadedExpenses);
         }
         else
         {
-            ConsoleUI.Warning("Json File IS Empty!!");
+            PrintMessage("[WARN]", "Json File IS Empty!!", ConsoleColor.Yellow);
         }
+    }
+
+    /// <summary>
+    /// Prints a message with a colored tag in front of it, e.g. [ OK ] in Green
+    /// </summary>
+    private void PrintMessage(string tag, string message, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.Write(tag + " ");
+        Console.ResetColor();
+        Console.WriteLine(message);
+    }
+
+    /// <summary>
+    /// Prints the given expenses inside a table
+    /// {value,-6} = left aligned in 6 characters, {value,12} = right aligned in 12 characters
+    /// </summary>
+    private void PrintExpenseTable(List<Expense> expensesToPrint)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine("┌────────┬────────────────────────┬──────────────┬────────────────────┐");
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"│ {"ID",-6} │ {"NAME",-22} │ {"AMOUNT",12} │ {"CATEGORY",-18} │");
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine("├────────┼────────────────────────┼──────────────┼────────────────────┤");
+        Console.ResetColor();
+
+        foreach (Expense expense in expensesToPrint)
+        {
+            Console.WriteLine($"│ {expense.Id,-6} │ {expense.Name,-22} │ {expense.Amount,12:F2} │ {expense.Category?.Name,-18} │");
+        }
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine("└────────┴────────────────────────┴──────────────┴────────────────────┘");
+
+        if (expensesToPrint.Count > 1)
+        {
+            decimal total = expensesToPrint.Sum(exp => exp.Amount ?? 0m);
+            Console.WriteLine($"{expensesToPrint.Count} expenses | Total : {total:F2}");
+        }
+        Console.ResetColor();
     }
 
 }
