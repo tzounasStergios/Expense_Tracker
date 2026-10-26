@@ -127,7 +127,7 @@ public class ExpenseManager : IExpenseManager
     {
         string loadedJsonData = await File.ReadAllTextAsync("ExpensesTracker.json");
         List<Expense> loadedExpenses = JsonSerializer.Deserialize<List<Expense>>(loadedJsonData);
-        if (loadedExpenses.Count != 0 && loadedExpenses is not null)
+        if (loadedExpenses is not null && loadedExpenses.Count != 0)
         {
             PrintExpenseTable(loadedExpenses);
         }
@@ -172,7 +172,7 @@ public class ExpenseManager : IExpenseManager
 
         if (expensesToPrint.Count > 1)
         {
-            decimal total = expensesToPrint.Sum(exp => exp.Amount ?? 0m);
+            decimal total = expensesToPrint.Sum(exp => exp.Amount);
             Console.WriteLine($"{expensesToPrint.Count} expenses | Total : {total:F2}");
         }
         Console.ResetColor();

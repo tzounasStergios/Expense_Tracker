@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text;
 class Program
 {
@@ -54,7 +55,7 @@ class Program
                         Console.Write("Give Expense Name : ");
                         tmpName = Console.ReadLine();
                         Console.Write("Give Expense Amount : ");
-                        tmpAmount = Convert.ToDecimal(Console.ReadLine());
+                        tmpAmount = decimal.Parse(Console.ReadLine()!, CultureInfo.InvariantCulture);
                         Console.Write("Give Expense Category : ");
                         tmpCategoryName = Console.ReadLine();
                         Category category = new Category(name: tmpCategoryName);
